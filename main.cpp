@@ -22,6 +22,15 @@ void *line1(void *arg){
     return NULL;
 }
 int main() {
+    /*
+     * line 1, 2, 3 type A
+     * line 4, 5 type B
+     * line 5, 6 type C
+     *
+     * type A has 8 employees
+     * type B has 6 employees
+     * type C has 5 employees
+     */
     pthread_mutex_init(&typeA_l1_mutex, NULL);
     pthread_cond_init(&typeA_l1_cond, NULL);
     pthread_t thread[8];
