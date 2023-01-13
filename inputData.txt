@@ -1,0 +1,3 @@
+minA maxA 1 3
+minB maxB 1 4
+minC maxC 1 5
