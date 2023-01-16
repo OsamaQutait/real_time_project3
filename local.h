@@ -21,7 +21,6 @@ int typeB_total_number = 0, typeC_total_number = 0, typeA_total_number = 0;
 int minA, maxA, minB, maxB, minC, maxC, number_of_line ,
 number_of_employee_of_typeA, number_of_employee_of_typeB, number_of_employee_of_typeC;
 int order[4], order1[3];
-unordered_set<int> unordered_set1 = {1, 2, 3, 4};
 typedef struct employees
 {
     int line;
@@ -34,7 +33,7 @@ typedef struct chocolate
     int finished_steps;
     pthread_mutex_t chocolate_mutex;
 } chocolate;
-vector<chocolate> list_of_chocolate;
+queue<chocolate> list_of_chocolate;
 queue<chocolate> queue1[9][9];
 queue<chocolate> queue2[9][9];
 queue<chocolate> queue3[9][9];
@@ -42,6 +41,6 @@ queue<chocolate> queue3[9][9];
 /*
  * mutex look
  */
-pthread_mutex_t typeA_l1_mutex[4], typeC_mutex[2], typeA_l3_mutex;
+pthread_mutex_t typeA_l1_mutex[4], typeC_mutex[2], total_queue;
 pthread_cond_t typeA_l1_cond[9], typeA_l2_cond, typeA_l3_cond;
 #endif //PROJECT3_LOCAL_H
