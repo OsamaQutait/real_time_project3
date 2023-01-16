@@ -7,6 +7,7 @@ void *typeC(void *arg);
 
 int main() {
     read_file();
+
     memset(order, 0, sizeof(order));
     memset(order1, 0, sizeof(order1));
 
