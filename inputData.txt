@@ -5,3 +5,4 @@ number_of_line 8
 number_of_employee_of_typeA 8
 number_of_employee_of_typeB 6
 number_of_employee_of_typeC 5
+printing_time 2 4
