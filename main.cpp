@@ -14,6 +14,8 @@ void *line_8(void *arg);
 
 void *containers(void *arg);
 
+void *carton_boxes(void *arg);
+
 int main(int argc, char *argv[]) {
 
     read_file();
@@ -100,6 +102,18 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    // boxes employee
+    for (int i = 0; i < 3; ++i) {
+        employees x;
+        x.worker = i; //at ane step
+        employees *emp = (employees *) malloc(sizeof(employees));
+        *emp = x;
+        if (pthread_create(&thread5[i], NULL, &carton_boxes, emp) != 0) {
+            perror("pthread_create");
+            exit(-1);
+        }
+    }
+
 
     for (int j = 0; j < 4; ++j) {
         for (int i = 0; i < 8; ++i) {
@@ -139,6 +153,13 @@ int main(int argc, char *argv[]) {
             exit(-1);
         }
     }
+
+    for (int i = 0; i < 3; ++i) {
+        if (pthread_join(thread5[i], NULL) != 0) {
+            perror("pthread_create");
+            exit(-1);
+        }
+    }
     return 0;
 }
 
@@ -158,6 +179,7 @@ void read_file() {
     fscanf(arguments, "%s %d\n", tmp, &number_of_employee_of_typeB);
     fscanf(arguments, "%s %d\n", tmp, &number_of_employee_of_typeC);
     fscanf(arguments, "%s %d %d\n", tmp, &printing_time_min, &printing_time_max);
+    fscanf(arguments, "%s %d\n", tmp, &carton_capacity);
 }
 
 int generate_waiting_time(int lower, int upper) {
@@ -624,57 +646,57 @@ void *containers(void *arg) {
 
     employees c = *(employees *) arg;
 
-    if (c.worker == 0){
-        while (1){
-            if(!list_of_chocolate_printing.empty()){
+    if (c.worker == 0) {
+        while (1) {
+            if (!list_of_chocolate_printing.empty()) {
                 if (list_of_chocolate_printing.front().type == 'A') {
                     pthread_mutex_lock(&total_queue_printing);
                     list_of_chocolate_printing_typeA.push(list_of_chocolate_printing.front());
                     list_of_chocolate_printing.pop();
                     containers_typeA++;
-                    cout << "containers_typeA " << containers_typeA << endl;
+//                    cout << "containers_typeA " << containers_typeA << endl;
                     usleep(50000);
                     pthread_mutex_unlock(&total_queue_printing);
-                }else {
+                } else {
                     sleep(2);
                 }
             }
         }
     }
-    if (c.worker == 1){
-        while (1){
-            if(!list_of_chocolate_printing.empty()){
+    if (c.worker == 1) {
+        while (1) {
+            if (!list_of_chocolate_printing.empty()) {
                 if (list_of_chocolate_printing.front().type == 'B') {
                     pthread_mutex_lock(&total_queue_printing);
-                    list_of_chocolate_printing_typeA.push(list_of_chocolate_printing.front());
+                    list_of_chocolate_printing_typeB.push(list_of_chocolate_printing.front());
                     list_of_chocolate_printing.pop();
                     containers_typeB++;
                     usleep(50000);
 
-                    cout << "containers_typeB " << containers_typeB << endl;
+//                    cout << "containers_typeB " << containers_typeB << endl;
                     pthread_mutex_unlock(&total_queue_printing);
 
-                }else {
+                } else {
                     sleep(2);
                 }
             }
         }
     }
 
-    if (c.worker == 2){
-        while (1){
-            if(!list_of_chocolate_printing.empty()){
+    if (c.worker == 2) {
+        while (1) {
+            if (!list_of_chocolate_printing.empty()) {
                 if (list_of_chocolate_printing.front().type == 'C') {
                     pthread_mutex_lock(&total_queue_printing);
-                    list_of_chocolate_printing_typeA.push(list_of_chocolate_printing.front());
+                    list_of_chocolate_printing_typeC.push(list_of_chocolate_printing.front());
                     list_of_chocolate_printing.pop();
                     containers_typeC++;
-                    cout << "containers_typeC " << containers_typeC << endl;
+//                    cout << "containers_typeC " << containers_typeC << endl;
                     usleep(50000);
 
                     pthread_mutex_unlock(&total_queue_printing);
 
-                }else {
+                } else {
                     sleep(2);
                 }
             }
@@ -682,6 +704,55 @@ void *containers(void *arg) {
         }
     }
 
+    free(arg);
+    return NULL;
+}
 
+void *carton_boxes(void *arg) {
+    employees c = *(employees *) arg;
+    if (c.worker == 0) {
+        while (1) {
+            if (!list_of_chocolate_printing_typeA.empty()) {
+                list_of_chocolate_packed_typeA.push(list_of_chocolate_printing_typeA.front());
+                list_of_chocolate_printing_typeA.pop();
+//                cout << list_of_chocolate_printing_typeA.size() << endl;
+                if ((list_of_chocolate_packed_typeA.size() % 20) == 0){
+                    carton_typeA++;
+                    cout << "carton_typeA " << carton_typeA << endl;
+                }
+                usleep(50000);
+
+            }
+        }
+
+    }
+    if (c.worker == 1) {
+        while (1) {
+            if (!list_of_chocolate_printing_typeB.empty()) {
+                list_of_chocolate_packed_typeB.push(list_of_chocolate_printing_typeB.front());
+                list_of_chocolate_printing_typeB.pop();
+                if ((list_of_chocolate_packed_typeB.size() % 20) == 0){
+                    carton_typeB++;
+                    cout << "carton_typeB " << carton_typeB << endl;
+                }
+                usleep(50000);
+            }
+        }
+    }
+    if (c.worker == 2) {
+        while (1) {
+            if (!list_of_chocolate_printing_typeC.empty()) {
+                list_of_chocolate_packed_typeC.push(list_of_chocolate_printing_typeC.front());
+                list_of_chocolate_printing_typeC.pop();
+                if ((list_of_chocolate_packed_typeC.size() % 20) == 0){
+                    carton_typeC++;
+                    cout << "carton_typeC " << carton_typeC << endl;
+                }
+                usleep(50000);
+
+            }
+        }
+    }
+    free(arg);
     return NULL;
 }

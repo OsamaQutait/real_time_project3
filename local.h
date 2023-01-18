@@ -21,10 +21,11 @@ pthread_t thread1[2][6];
 pthread_t thread2[2][5];
 pthread_t thread3[2];
 pthread_t thread4[3];
+pthread_t thread5[3]; // boxes employees
 bool flag = true;
-int containers_typeA, containers_typeB, containers_typeC;
 int printing_expiration_date_typeA = 0, printing_expiration_date_typeB = 0, printing_expiration_date_typeC = 0;
-int printing_time_min, printing_time_max;
+int containers_typeA=0, containers_typeB=0, containers_typeC=0, carton_typeA=0,carton_typeB=0, carton_typeC=0;
+int printing_time_min, printing_time_max, carton_capacity;
 int typeB_total_number = 0, typeC_total_number = 0, typeA_total_number = 0;
 int minA, maxA, minB, maxB, minC, maxC, number_of_line ,
 number_of_employee_of_typeA, number_of_employee_of_typeB, number_of_employee_of_typeC;
@@ -44,6 +45,7 @@ typedef struct chocolate
 queue<chocolate> list_of_chocolate;
 queue<chocolate> list_of_chocolate_printing;
 queue<chocolate> list_of_chocolate_printing_typeA, list_of_chocolate_printing_typeB, list_of_chocolate_printing_typeC;
+queue<chocolate> list_of_chocolate_packed_typeA, list_of_chocolate_packed_typeB, list_of_chocolate_packed_typeC;
 queue<chocolate> queue1[9][9];
 queue<chocolate> queue2[9][9];
 queue<chocolate> queue3[9][9];
