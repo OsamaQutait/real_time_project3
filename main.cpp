@@ -628,13 +628,13 @@ void *containers(void *arg) {
         while (1){
             if(!list_of_chocolate_printing.empty()){
                 if (list_of_chocolate_printing.front().type == 'A') {
-//                    pthread_mutex_lock(&total_queue_printing);
+                    pthread_mutex_lock(&total_queue_printing);
                     list_of_chocolate_printing_typeA.push(list_of_chocolate_printing.front());
                     list_of_chocolate_printing.pop();
                     containers_typeA++;
                     cout << "containers_typeA " << containers_typeA << endl;
                     usleep(50000);
-//                    pthread_mutex_unlock(&total_queue_printing);
+                    pthread_mutex_unlock(&total_queue_printing);
                 }else {
                     sleep(2);
                 }
@@ -645,14 +645,14 @@ void *containers(void *arg) {
         while (1){
             if(!list_of_chocolate_printing.empty()){
                 if (list_of_chocolate_printing.front().type == 'B') {
-//                    pthread_mutex_lock(&total_queue_printing);
+                    pthread_mutex_lock(&total_queue_printing);
                     list_of_chocolate_printing_typeA.push(list_of_chocolate_printing.front());
                     list_of_chocolate_printing.pop();
                     containers_typeB++;
                     usleep(50000);
 
                     cout << "containers_typeB " << containers_typeB << endl;
-//                    pthread_mutex_unlock(&total_queue_printing);
+                    pthread_mutex_unlock(&total_queue_printing);
 
                 }else {
                     sleep(2);
@@ -665,14 +665,14 @@ void *containers(void *arg) {
         while (1){
             if(!list_of_chocolate_printing.empty()){
                 if (list_of_chocolate_printing.front().type == 'C') {
-//                    pthread_mutex_lock(&total_queue_printing);
+                    pthread_mutex_lock(&total_queue_printing);
                     list_of_chocolate_printing_typeA.push(list_of_chocolate_printing.front());
                     list_of_chocolate_printing.pop();
                     containers_typeC++;
                     cout << "containers_typeC " << containers_typeC << endl;
                     usleep(50000);
 
-//                    pthread_mutex_unlock(&total_queue_printing);
+                    pthread_mutex_unlock(&total_queue_printing);
 
                 }else {
                     sleep(2);
