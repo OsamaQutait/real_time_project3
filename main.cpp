@@ -12,15 +12,18 @@ void *typeC(void *arg);
 
 void *line_8(void *arg);
 
+void *containers(void *arg);
+
 int main(int argc, char *argv[]) {
 
-    pthread_cond_init(&list_of_chocolate_available, NULL);
     read_file();
 
     memset(order, 0, sizeof(order));
     memset(order1, 0, sizeof(order1));
 
     total_queue = PTHREAD_MUTEX_INITIALIZER;
+    total_queue_printing = PTHREAD_MUTEX_INITIALIZER;
+
     for (int i = 0; i < 4; ++i) {
         typeA_l1_mutex[i] = PTHREAD_MUTEX_INITIALIZER;
     }
@@ -84,10 +87,19 @@ int main(int argc, char *argv[]) {
         }
     }
 
-//    while (1){
-//        cout << printing_expiration_date_typeA << " " << printing_expiration_date_typeB << " " << printing_expiration_date_typeC << endl;
-//        sleep(2);
-//    }
+    //containers employee
+
+    for (int i = 0; i < 3; ++i) {
+        employees x;
+        x.worker = i; //at ane step
+        employees *emp = (employees *) malloc(sizeof(employees));
+        *emp = x;
+        if (pthread_create(&thread4[i], NULL, &containers, emp) != 0) {
+            perror("pthread_create");
+            exit(-1);
+        }
+    }
+
 
     for (int j = 0; j < 4; ++j) {
         for (int i = 0; i < 8; ++i) {
@@ -120,7 +132,13 @@ int main(int argc, char *argv[]) {
             exit(-1);
         }
     }
-    pthread_cond_destroy(&list_of_chocolate_available);
+
+    for (int i = 0; i < 3; ++i) {
+        if (pthread_join(thread4[i], NULL) != 0) {
+            perror("pthread_create");
+            exit(-1);
+        }
+    }
     return 0;
 }
 
@@ -549,6 +567,7 @@ void *typeC(void *arg) {
 void *line_8(void *arg) {
     employees c = *(employees *) arg;
     sleep(1);
+
     if (c.worker == 0) {
         while (1) {
             if (flag) {
@@ -556,13 +575,14 @@ void *line_8(void *arg) {
                     for (int i = 0; i < 10; ++i) {
 //                        cout << GREEN << list_of_chocolate.front().chocolate_id << " " << list_of_chocolate.front().type
 //                             << endl;
-                        if (list_of_chocolate.front().type == 'A'){
+                        if (list_of_chocolate.front().type == 'A') {
                             printing_expiration_date_typeA++;
-                        } else if (list_of_chocolate.front().type == 'B'){
+                        } else if (list_of_chocolate.front().type == 'B') {
                             printing_expiration_date_typeB++;
-                        } else if (list_of_chocolate.front().type == 'C'){
+                        } else if (list_of_chocolate.front().type == 'C') {
                             printing_expiration_date_typeC++;
                         }
+                        list_of_chocolate_printing.push(list_of_chocolate.front());
                         list_of_chocolate.pop();
                     }
                     cout << endl;
@@ -579,13 +599,14 @@ void *line_8(void *arg) {
                     for (int i = 0; i < 10; ++i) {
 //                        cout << RED << list_of_chocolate.front().chocolate_id << " " << list_of_chocolate.front().type
 //                             << endl;
-                        if (list_of_chocolate.front().type == 'A'){
+                        if (list_of_chocolate.front().type == 'A') {
                             printing_expiration_date_typeA++;
-                        } else if (list_of_chocolate.front().type == 'B'){
+                        } else if (list_of_chocolate.front().type == 'B') {
                             printing_expiration_date_typeB++;
-                        } else if (list_of_chocolate.front().type == 'C'){
+                        } else if (list_of_chocolate.front().type == 'C') {
                             printing_expiration_date_typeC++;
                         }
+                        list_of_chocolate_printing.push(list_of_chocolate.front());
                         list_of_chocolate.pop();
                     }
                     cout << endl;
@@ -596,5 +617,71 @@ void *line_8(void *arg) {
         }
     }
     free(arg);
+    return NULL;
+}
+
+void *containers(void *arg) {
+
+    employees c = *(employees *) arg;
+
+    if (c.worker == 0){
+        while (1){
+            if(!list_of_chocolate_printing.empty()){
+                if (list_of_chocolate_printing.front().type == 'A') {
+//                    pthread_mutex_lock(&total_queue_printing);
+                    list_of_chocolate_printing_typeA.push(list_of_chocolate_printing.front());
+                    list_of_chocolate_printing.pop();
+                    containers_typeA++;
+                    cout << "containers_typeA " << containers_typeA << endl;
+                    usleep(50000);
+//                    pthread_mutex_unlock(&total_queue_printing);
+                }else {
+                    sleep(2);
+                }
+            }
+        }
+    }
+    if (c.worker == 1){
+        while (1){
+            if(!list_of_chocolate_printing.empty()){
+                if (list_of_chocolate_printing.front().type == 'B') {
+//                    pthread_mutex_lock(&total_queue_printing);
+                    list_of_chocolate_printing_typeA.push(list_of_chocolate_printing.front());
+                    list_of_chocolate_printing.pop();
+                    containers_typeB++;
+                    usleep(50000);
+
+                    cout << "containers_typeB " << containers_typeB << endl;
+//                    pthread_mutex_unlock(&total_queue_printing);
+
+                }else {
+                    sleep(2);
+                }
+            }
+        }
+    }
+
+    if (c.worker == 2){
+        while (1){
+            if(!list_of_chocolate_printing.empty()){
+                if (list_of_chocolate_printing.front().type == 'C') {
+//                    pthread_mutex_lock(&total_queue_printing);
+                    list_of_chocolate_printing_typeA.push(list_of_chocolate_printing.front());
+                    list_of_chocolate_printing.pop();
+                    containers_typeC++;
+                    cout << "containers_typeC " << containers_typeC << endl;
+                    usleep(50000);
+
+//                    pthread_mutex_unlock(&total_queue_printing);
+
+                }else {
+                    sleep(2);
+                }
+            }
+
+        }
+    }
+
+
     return NULL;
 }

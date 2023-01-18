@@ -15,13 +15,14 @@ using namespace std;
 #define BLACK   "\033[30m"      /* Black */
 #define MAGENTA "\033[35m"      /* Magenta */
 
-pthread_cond_t list_of_chocolate_available;
 
 pthread_t thread[3][8];
 pthread_t thread1[2][6];
 pthread_t thread2[2][5];
 pthread_t thread3[2];
+pthread_t thread4[3];
 bool flag = true;
+int containers_typeA, containers_typeB, containers_typeC;
 int printing_expiration_date_typeA = 0, printing_expiration_date_typeB = 0, printing_expiration_date_typeC = 0;
 int printing_time_min, printing_time_max;
 int typeB_total_number = 0, typeC_total_number = 0, typeA_total_number = 0;
@@ -41,6 +42,8 @@ typedef struct chocolate
     pthread_mutex_t chocolate_mutex;
 } chocolate;
 queue<chocolate> list_of_chocolate;
+queue<chocolate> list_of_chocolate_printing;
+queue<chocolate> list_of_chocolate_printing_typeA, list_of_chocolate_printing_typeB, list_of_chocolate_printing_typeC;
 queue<chocolate> queue1[9][9];
 queue<chocolate> queue2[9][9];
 queue<chocolate> queue3[9][9];
@@ -48,6 +51,5 @@ queue<chocolate> queue3[9][9];
 /*
  * mutex look
  */
-pthread_mutex_t typeA_l1_mutex[4], typeC_mutex[2], total_queue;
-pthread_cond_t typeA_l1_cond[9], typeA_l2_cond, typeA_l3_cond;
+pthread_mutex_t typeA_l1_mutex[4], typeC_mutex[2], total_queue, total_queue_printing;
 #endif //PROJECT3_LOCAL_H
