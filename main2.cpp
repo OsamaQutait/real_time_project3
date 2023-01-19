@@ -17,6 +17,10 @@ void *containers(void *arg);
 
 void *carton_boxes(void *arg);
 
+void *storage_boxes(void *arg);
+
+void *trucks(void *arg);
+
 void startOpenGl();
 
 void display();
@@ -95,7 +99,10 @@ int main(int argc, char **argv) {
 
     total_queue = PTHREAD_MUTEX_INITIALIZER;
     total_queue_printing = PTHREAD_MUTEX_INITIALIZER;
+    carton_mutex = PTHREAD_MUTEX_INITIALIZER;
+
     pthread_cond_init(&line8_cond, NULL);
+    pthread_cond_init(&storage_area_cond, NULL);
     for (int i = 0; i < 4; ++i) {
         typeA_l1_mutex[i] = PTHREAD_MUTEX_INITIALIZER;
     }
@@ -181,6 +188,30 @@ int main(int argc, char **argv) {
         }
     }
 
+    // storage employee
+    for (int i = 0; i < 2; ++i) {
+        employees x;
+        x.worker = i; //at ane step
+        employees *emp = (employees *) malloc(sizeof(employees));
+        *emp = x;
+        if (pthread_create(&thread6[i], NULL, &storage_boxes, emp) != 0) {
+            perror("pthread_create");
+            exit(-1);
+        }
+    }
+
+    // storage employee
+    for (int i = 0; i < 2; ++i) {
+        employees x;
+        x.worker = i; //at ane step
+        employees *emp = (employees *) malloc(sizeof(employees));
+        *emp = x;
+        if (pthread_create(&thread7[i], NULL, &trucks, emp) != 0) {
+            perror("pthread_create");
+            exit(-1);
+        }
+    }
+
     glutInit(&argc, argv);
     startOpenGl();
 
@@ -227,7 +258,17 @@ int main(int argc, char **argv) {
             }
         }
     }
+
+    for (int i = 0; i < 2; ++i) {
+        if (pthread_join(thread6[i], NULL) != 0) {
+            perror("pthread_create");
+            exit(-1);
+        }
+    }
+
     pthread_cond_destroy(&line8_cond);
+    pthread_cond_destroy(&storage_area_cond);
+
     return 0;
 }
 
@@ -247,6 +288,10 @@ void read_file() {
     fscanf(arguments, "%s %d\n", tmp, &number_of_employee_of_typeB);
     fscanf(arguments, "%s %d\n", tmp, &number_of_employee_of_typeC);
     fscanf(arguments, "%s %d\n", tmp, &carton_capacity);
+    fscanf(arguments, "%s %d %d\n", tmp, &time_to_place_the_carton_in_the_storage_area_min,
+           &time_to_place_the_carton_in_the_storage_area_max);
+    fscanf(arguments, "%s %d\n", tmp, &storage_area_capacity);
+
 }
 
 int generate_waiting_time(int lower, int upper) {
@@ -816,12 +861,17 @@ void *carton_boxes(void *arg) {
             if (!list_of_chocolate_printing_typeA.empty()) {
                 pthread_mutex_lock(&total_queue_printing);
 
+//                pthread_mutex_lock(&carton_mutex);
                 list_of_chocolate_packed_typeA.push(list_of_chocolate_printing_typeA.front());
                 list_of_chocolate_printing_typeA.pop();
+//                pthread_mutex_unlock(&carton_mutex);
+
                 pthread_mutex_unlock(&total_queue_printing);
 
                 if ((list_of_chocolate_packed_typeA.size() % 20) == 0) {
                     carton_typeA++;
+                    number_of_typeA_in_storage++;
+                    pthread_cond_signal(&storage_area_cond);
                 }
                 usleep(50000);
 
@@ -834,12 +884,17 @@ void *carton_boxes(void *arg) {
             if (!list_of_chocolate_printing_typeB.empty()) {
                 pthread_mutex_lock(&total_queue_printing);
 
+//                pthread_mutex_lock(&carton_mutex);
                 list_of_chocolate_packed_typeB.push(list_of_chocolate_printing_typeB.front());
                 list_of_chocolate_printing_typeB.pop();
+//                pthread_mutex_unlock(&carton_mutex);
+
                 pthread_mutex_unlock(&total_queue_printing);
 
                 if ((list_of_chocolate_packed_typeB.size() % 20) == 0) {
                     carton_typeB++;
+                    number_of_typeB_in_storage++;
+                    pthread_cond_signal(&storage_area_cond);
                 }
                 usleep(50000);
             }
@@ -850,18 +905,52 @@ void *carton_boxes(void *arg) {
             if (!list_of_chocolate_printing_typeC.empty()) {
                 pthread_mutex_lock(&total_queue_printing);
 
+//                pthread_mutex_lock(&carton_mutex);
                 list_of_chocolate_packed_typeC.push(list_of_chocolate_printing_typeC.front());
                 list_of_chocolate_printing_typeC.pop();
+//                pthread_mutex_unlock(&carton_mutex);
+
                 pthread_mutex_unlock(&total_queue_printing);
 
                 if ((list_of_chocolate_packed_typeC.size() % 20) == 0) {
                     carton_typeC++;
+                    number_of_typeC_in_storage++;
+                    pthread_cond_signal(&storage_area_cond);
                 }
                 usleep(50000);
 
             }
         }
     }
+    free(arg);
+    return NULL;
+}
+
+void *storage_boxes(void *arg) {
+    employees c = *(employees *) arg;
+    bool ff = true;
+    while (1) {
+        pthread_mutex_lock(&total_queue_printing);
+        while (ff) {
+            pthread_cond_wait(&storage_area_cond, &total_queue_printing);
+            ff = false;
+        }
+        storage_area_counter++;
+        pthread_mutex_unlock(&total_queue_printing);
+        sleep(generate_waiting_time(time_to_place_the_carton_in_the_storage_area_min,
+                                    time_to_place_the_carton_in_the_storage_area_max));
+        ff = true;
+        cout << "storage_area_counter " << storage_area_counter << endl;
+    }
+
+    free(arg);
+    return NULL;
+}
+
+void *trucks(void *arg){
+    employees c = *(employees *) arg;
+
+
     free(arg);
     return NULL;
 }
