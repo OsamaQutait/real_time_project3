@@ -100,7 +100,6 @@ int main(int argc, char **argv) {
     total_queue = PTHREAD_MUTEX_INITIALIZER;
     total_queue_printing = PTHREAD_MUTEX_INITIALIZER;
     truck_mutex = PTHREAD_MUTEX_INITIALIZER;
-    storage_mutex = PTHREAD_MUTEX_INITIALIZER;
 
     pthread_cond_init(&line8_cond, NULL);
     pthread_cond_init(&storage_area_cond, NULL);
@@ -274,7 +273,7 @@ int main(int argc, char **argv) {
 }
 
 void read_file() {
-    char tmp[30];
+    char tmp[50];
     FILE *arguments;
     arguments = fopen("inputData.txt", "r");
     if (arguments == NULL) {
@@ -288,6 +287,7 @@ void read_file() {
     fscanf(arguments, "%s %d\n", tmp, &number_of_employee_of_typeA);
     fscanf(arguments, "%s %d\n", tmp, &number_of_employee_of_typeB);
     fscanf(arguments, "%s %d\n", tmp, &number_of_employee_of_typeC);
+    fscanf(arguments, "%s %d %d\n", tmp, &printing_time_min, &printing_time_max);
     fscanf(arguments, "%s %d\n", tmp, &carton_capacity);
     fscanf(arguments, "%s %d %d\n", tmp, &time_to_place_the_carton_in_the_storage_area_min,
            &time_to_place_the_carton_in_the_storage_area_max);
@@ -295,6 +295,7 @@ void read_file() {
     fscanf(arguments, "%s %d\n", tmp, &number_of_trucks);
     fscanf(arguments, "%s %d\n", tmp, &truck_capacity);
     fscanf(arguments, "%s %d\n", tmp, &truck_travel_time);
+    fclose(arguments);
 
 }
 
@@ -865,8 +866,10 @@ void *carton_boxes(void *arg) {
             if (!list_of_chocolate_printing_typeA.empty()) {
                 pthread_mutex_lock(&total_queue_printing);
 
+//                pthread_mutex_lock(&carton_mutex);
                 list_of_chocolate_packed_typeA.push(list_of_chocolate_printing_typeA.front());
                 list_of_chocolate_printing_typeA.pop();
+//                pthread_mutex_unlock(&carton_mutex);
 
                 pthread_mutex_unlock(&total_queue_printing);
 
@@ -886,8 +889,10 @@ void *carton_boxes(void *arg) {
             if (!list_of_chocolate_printing_typeB.empty()) {
                 pthread_mutex_lock(&total_queue_printing);
 
+//                pthread_mutex_lock(&carton_mutex);
                 list_of_chocolate_packed_typeB.push(list_of_chocolate_printing_typeB.front());
                 list_of_chocolate_printing_typeB.pop();
+//                pthread_mutex_unlock(&carton_mutex);
 
                 pthread_mutex_unlock(&total_queue_printing);
 
@@ -905,8 +910,10 @@ void *carton_boxes(void *arg) {
             if (!list_of_chocolate_printing_typeC.empty()) {
                 pthread_mutex_lock(&total_queue_printing);
 
+//                pthread_mutex_lock(&carton_mutex);
                 list_of_chocolate_packed_typeC.push(list_of_chocolate_printing_typeC.front());
                 list_of_chocolate_printing_typeC.pop();
+//                pthread_mutex_unlock(&carton_mutex);
 
                 pthread_mutex_unlock(&total_queue_printing);
 
@@ -933,11 +940,7 @@ void *storage_boxes(void *arg) {
             pthread_cond_wait(&storage_area_cond, &total_queue_printing);
             ff = false;
         }
-
-//        pthread_mutex_lock(&storage_mutex);
         storage_area_counter++;
-//        pthread_mutex_lock(&storage_mutex);
-
         pthread_mutex_unlock(&total_queue_printing);
         sleep(generate_waiting_time(time_to_place_the_carton_in_the_storage_area_min,
                                     time_to_place_the_carton_in_the_storage_area_max));
@@ -952,29 +955,28 @@ void *storage_boxes(void *arg) {
 void *trucks(void *arg){
     employees c = *(employees *) arg;
     while(1){
-//        pthread_mutex_lock(&truck_mutex);
-//        if (storage_area_counter > 0){
-//            if (truck[current_truck] < truck_capacity){
-//                pthread_mutex_lock(&storage_mutex);
-//                storage_area_counter--;
-//                truck[current_truck]++;
-//                pthread_mutex_unlock(&storage_mutex);
-//                if (truck[current_truck] == truck_capacity){
-//                    current_time = time(NULL);
-//                    trucks_time[current_truck] = current_time;
-//                    current_truck = (current_truck+1)%number_of_trucks;
-//                    cout << "truck " << current_truck << " is full" << endl;
-//                }
-//            }
-//            if (truck[current_truck] == truck_capacity){
-//                current_time = time(NULL);
-//                int delta_time = current_time - trucks_time[current_truck];
-//                if (delta_time >= truck_travel_time){
-//                    truck[current_truck] = 0;
-//                }
-//            }
-//        }
-//        pthread_mutex_unlock(&truck_mutex);
+        pthread_mutex_lock(&truck_mutex);
+        if (storage_area_counter > 0){
+            if (truck[current_truck] < truck_capacity){
+                truck[current_truck]++;
+                cout << current_truck << endl;
+                storage_area_counter--;
+                if (truck[current_truck] == truck_capacity){
+                    current_time = time(NULL);
+                    trucks_time[current_truck] = current_time;
+                    current_truck = (current_truck+1)%number_of_trucks;
+                }
+            }
+            if (truck[current_truck] == truck_capacity){
+                current_time = time(NULL);
+                int delta_time = current_time - trucks_time[current_truck];
+                if (delta_time >= (int)truck_travel_time){
+                    truck[current_truck] = 0;
+                    cout << "truck " << current_truck << " is ready" << endl;
+                }
+            }
+        }
+        pthread_mutex_unlock(&truck_mutex);
     }
     free(arg);
     return NULL;

@@ -20,6 +20,7 @@ using namespace std;
 #include <sys/types.h>
 #include <stdio.h>
 #include <time.h>
+#include <time.h>
 
 pthread_t thread[3][8];
 pthread_t thread1[2][6];
@@ -30,6 +31,7 @@ pthread_t thread5[3]; // boxes employees
 pthread_t thread6[2];
 pthread_t thread7[2];
 bool flag = true;
+int number_of_trucks = 0, truck_capacity = 0, truck_travel_time = 0;
 int number_of_typeA_in_storage = 0, number_of_typeB_in_storage = 0, number_of_typeC_in_storage = 0;
 int storage_area_capacity = 0, storage_area_counter = 0;
 int time_to_place_the_carton_in_the_storage_area_min = 0, time_to_place_the_carton_in_the_storage_area_max = 0;
@@ -60,11 +62,14 @@ queue<chocolate> list_of_chocolate_packed_typeA, list_of_chocolate_packed_typeB,
 queue<chocolate> queue1[9][9];
 queue<chocolate> queue2[9][9];
 queue<chocolate> queue3[9][9];
-vector<int> truck1, truck2, truck3;
+int truck[3];
+time_t trucks_time[3];
+int current_truck = 0;
+time_t current_time;
 
 /*
  * mutex look
  */
-pthread_mutex_t typeA_l1_mutex[4], typeC_mutex[2], total_queue, total_queue_printing, carton_mutex;
+pthread_mutex_t typeA_l1_mutex[4], typeC_mutex[2], total_queue, total_queue_printing, truck_mutex, storage_mutex;
 pthread_cond_t typeA_l1_cond[9], typeA_l2_cond, line8_cond, storage_area_cond;
 #endif //PROJECT3_LOCAL_H
